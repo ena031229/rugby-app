@@ -1,14 +1,13 @@
 import pandas as pd
 import streamlit as st
 import plotly.express as px
-import textwrap
 
 
 # =========================================================
 # ページ設定
 # =========================================================
 st.set_page_config(
-    page_title="🏉 TUS InBody",
+    page_title="TUS InBody",
     page_icon="🏉",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -18,152 +17,142 @@ st.set_page_config(
 # =========================================================
 # CSS
 # =========================================================
-st.markdown("""
+st.html("""
 <style>
 
-    /* 全体 */
-    .main {
-        background-color: #f7f8fa;
-    }
+body {
+    font-family: "Noto Sans JP", sans-serif;
+}
 
-    /* タイトル */
-    .main-title {
-        font-size: 42px;
-        font-weight: 800;
-        margin-bottom: 0px;
-    }
+/* メインタイトル */
+.main-title {
+    font-size: 42px;
+    font-weight: 800;
+    color: #252936;
+    margin-bottom: 3px;
+}
 
-    .sub-title {
-        color: #777;
-        font-size: 16px;
-        margin-bottom: 25px;
-    }
+.sub-title {
+    font-size: 16px;
+    color: #777777;
+    margin-bottom: 25px;
+}
 
-    /* 選手ヘッダー */
-    .player-header {
-        background: linear-gradient(135deg, #1f2937, #374151);
-        color: white;
-        padding: 25px;
-        border-radius: 18px;
-        margin-bottom: 25px;
-    }
+/* 選手情報 */
+.player-header {
+    background: linear-gradient(135deg, #202a38, #344154);
+    border-radius: 18px;
+    padding: 25px 30px;
+    margin: 10px 0 30px 0;
+    color: white;
+}
 
-    .player-name {
-        font-size: 32px;
-        font-weight: 800;
-        margin-bottom: 5px;
-    }
+.player-name {
+    font-size: 28px;
+    font-weight: 800;
+    margin-bottom: 8px;
+}
 
-    .measurement-date {
-        font-size: 15px;
-        color: #d1d5db;
-    }
+.measurement-date {
+    font-size: 15px;
+    color: #d8dee8;
+}
 
-    /* カード */
-    .metric-card {
-        background-color: white;
-        padding: 22px;
-        border-radius: 18px;
-        box-shadow: 0 3px 12px rgba(0,0,0,0.07);
-        border: 1px solid #eeeeee;
-        min-height: 220px;
-    }
+/* セクション */
+.section-title {
+    font-size: 27px;
+    font-weight: 800;
+    color: #252936;
+    margin: 25px 0 15px 0;
+}
 
-    .metric-title {
-        font-size: 18px;
-        font-weight: 700;
-        color: #555;
-    }
+/* データカード */
+.metric-card {
+    background: white;
+    border: 1px solid #e9ebef;
+    border-radius: 18px;
+    padding: 24px;
+    min-height: 220px;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.06);
+}
 
-    .metric-value {
-        font-size: 38px;
-        font-weight: 800;
-        margin-top: 8px;
-        margin-bottom: 5px;
-    }
+.metric-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: #555b66;
+    margin-bottom: 10px;
+}
 
-    .metric-goal {
-        color: #777;
-        font-size: 14px;
-    }
+.metric-value {
+    font-size: 36px;
+    font-weight: 800;
+    color: #252936;
+    margin-bottom: 8px;
+}
 
-    .metric-diff {
-        font-size: 16px;
-        font-weight: 700;
-        margin-top: 12px;
-    }
+.metric-goal {
+    font-size: 14px;
+    color: #777777;
+    margin-bottom: 12px;
+}
 
-    .positive {
-        color: #16a34a;
-    }
+.metric-diff {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
 
-    .negative {
-        color: #dc2626;
-    }
+.positive {
+    color: #16a34a;
+}
 
-    .neutral {
-        color: #6b7280;
-    }
+.negative {
+    color: #dc2626;
+}
 
-    /* セクションタイトル */
-    .section-title {
-        font-size: 26px;
-        font-weight: 800;
-        margin-top: 30px;
-        margin-bottom: 15px;
-    }
+.neutral {
+    color: #6b7280;
+}
 
-    /* ランキング */
-    .ranking-card {
-        background-color: white;
-        padding: 15px 20px;
-        border-radius: 14px;
-        margin-bottom: 8px;
-        border: 1px solid #eeeeee;
-        box-shadow: 0 2px 7px rgba(0,0,0,0.05);
-    }
+.previous-data {
+    font-size: 13px;
+    color: #888888;
+}
 
-    .ranking-name {
-        font-size: 18px;
-        font-weight: 700;
-    }
+/* ランキング */
+.ranking-card {
+    background: white;
+    border: 1px solid #e9ebef;
+    border-radius: 14px;
+    padding: 15px 20px;
+    margin-bottom: 8px;
+    box-shadow: 0 2px 7px rgba(0,0,0,0.04);
+}
 
-    .ranking-data {
-        color: #666;
-        font-size: 14px;
-    }
+.ranking-name {
+    font-size: 17px;
+    font-weight: 700;
+    color: #252936;
+}
 
-    /* 目標達成 */
-    .goal-ranking-card {
-        background-color: white;
-        padding: 15px 20px;
-        border-radius: 14px;
-        margin-bottom: 8px;
-        border-left: 5px solid #22c55e;
-        box-shadow: 0 2px 7px rgba(0,0,0,0.05);
-    }
+.ranking-data {
+    font-size: 14px;
+    color: #666666;
+}
 
-    /* サイドバー */
-    [data-testid="stSidebar"] {
-        background-color: #f1f3f6;
-    }
+/* サイドバー */
+.sidebar-title {
+    font-size: 22px;
+    font-weight: 800;
+}
+
+.sidebar-description {
+    font-size: 14px;
+    color: #666666;
+}
 
 </style>
-""", unsafe_allow_html=True)
-
-
-# =========================================================
-# HTML表示用関数
-# =========================================================
-def show_html(html):
-    """
-    HTMLのインデントを自動的に削除して表示する。
-    コードとして表示される問題を防ぐ。
-    """
-    st.markdown(
-        textwrap.dedent(html),
-        unsafe_allow_html=True
-    )
+""")
 
 
 # =========================================================
@@ -187,7 +176,17 @@ df = load_data()
 # =========================================================
 # サイドバー
 # =========================================================
-st.sidebar.title("🏉 TUS InBody")
+st.sidebar.html("""
+<div class="sidebar-title">
+    🏉 TUS InBody
+</div>
+
+<br>
+
+<div class="sidebar-description">
+    選手の身体データを管理・分析するダッシュボード
+</div>
+""")
 
 st.sidebar.markdown("---")
 
@@ -202,15 +201,14 @@ selected_player = st.sidebar.selectbox(
 
 st.sidebar.markdown("---")
 
-st.sidebar.markdown("""
-### 📊 表示内容
+st.sidebar.subheader("📊 表示内容")
 
+st.sidebar.markdown("""
 - 最新身体データ
 - 目標達成度
 - 前回測定との比較
 - 身体データの推移
 - チームランキング
-- 目標達成ランキング
 """)
 
 
@@ -241,6 +239,8 @@ if len(player_df) >= 2:
 
 else:
 
+    previous = None
+
     weight_change = None
     muscle_change = None
     fat_change = None
@@ -261,11 +261,11 @@ fat_diff = latest["fat"] - latest["goal_fat"]
 
 
 # =========================================================
-# 目標達成率
+# 目標達成度
 # =========================================================
-def calculate_progress(current, goal, metric_type):
+def calculate_progress(current, goal, mode):
 
-    if metric_type == "increase":
+    if mode == "increase":
 
         if goal == 0:
             return 100
@@ -274,7 +274,6 @@ def calculate_progress(current, goal, metric_type):
 
     else:
 
-        # 体脂肪など「減らす」項目
         if current == 0:
             return 100
 
@@ -305,13 +304,11 @@ fat_progress = calculate_progress(
 # =========================================================
 # タイトル
 # =========================================================
-show_html("""
+st.html("""
 <div class="main-title">
     🏉 TUS InBody
 </div>
-""")
 
-show_html("""
 <div class="sub-title">
     選手の身体データを管理・分析するダッシュボード
 </div>
@@ -321,7 +318,7 @@ show_html("""
 # =========================================================
 # 選手情報
 # =========================================================
-show_html(f"""
+st.html(f"""
 <div class="player-header">
 
     <div class="player-name">
@@ -337,9 +334,9 @@ show_html(f"""
 
 
 # =========================================================
-# 最新データ
+# 最新コンディション
 # =========================================================
-show_html("""
+st.html("""
 <div class="section-title">
     📊 最新コンディション
 </div>
@@ -373,15 +370,12 @@ with col1:
     if weight_change is not None:
 
         if weight_change > 0:
-
             change_text = f"↑ 前回より +{weight_change:.1f} kg"
 
         elif weight_change < 0:
-
             change_text = f"↓ 前回より {weight_change:.1f} kg"
 
         else:
-
             change_text = "→ 前回から変化なし"
 
     else:
@@ -389,7 +383,7 @@ with col1:
         change_text = "初回測定"
 
 
-    show_html(f"""
+    st.html(f"""
     <div class="metric-card">
 
         <div class="metric-title">
@@ -408,7 +402,7 @@ with col1:
             {diff_text}
         </div>
 
-        <div class="metric-goal">
+        <div class="previous-data">
             {change_text}
         </div>
 
@@ -445,15 +439,12 @@ with col2:
     if muscle_change is not None:
 
         if muscle_change > 0:
-
             change_text = f"↑ 前回より +{muscle_change:.1f} kg"
 
         elif muscle_change < 0:
-
             change_text = f"↓ 前回より {muscle_change:.1f} kg"
 
         else:
-
             change_text = "→ 前回から変化なし"
 
     else:
@@ -461,7 +452,7 @@ with col2:
         change_text = "初回測定"
 
 
-    show_html(f"""
+    st.html(f"""
     <div class="metric-card">
 
         <div class="metric-title">
@@ -480,7 +471,7 @@ with col2:
             {diff_text}
         </div>
 
-        <div class="metric-goal">
+        <div class="previous-data">
             {change_text}
         </div>
 
@@ -494,7 +485,7 @@ with col2:
 
 
 # =========================================================
-# 体脂肪
+# 体脂肪率
 # =========================================================
 with col3:
 
@@ -517,15 +508,12 @@ with col3:
     if fat_change is not None:
 
         if fat_change > 0:
-
             change_text = f"↑ 前回より +{fat_change:.1f}%"
 
         elif fat_change < 0:
-
             change_text = f"↓ 前回より {fat_change:.1f}%"
 
         else:
-
             change_text = "→ 前回から変化なし"
 
     else:
@@ -533,7 +521,7 @@ with col3:
         change_text = "初回測定"
 
 
-    show_html(f"""
+    st.html(f"""
     <div class="metric-card">
 
         <div class="metric-title">
@@ -552,7 +540,7 @@ with col3:
             {diff_text}
         </div>
 
-        <div class="metric-goal">
+        <div class="previous-data">
             {change_text}
         </div>
 
@@ -568,7 +556,7 @@ with col3:
 # =========================================================
 # 推移グラフ
 # =========================================================
-show_html("""
+st.html("""
 <div class="section-title">
     📈 身体データの推移
 </div>
@@ -591,13 +579,10 @@ metric = metric_map[metric_label]
 
 
 # =========================================================
-# グラフ用データ
+# グラフ
 # =========================================================
-graph_df = player_df.copy()
-
-
 fig = px.line(
-    graph_df,
+    player_df,
     x="date",
     y=metric,
     markers=True,
@@ -608,9 +593,7 @@ fig = px.line(
 )
 
 
-# =========================================================
-# 目標ライン
-# =========================================================
+# 目標値
 if metric == "weight":
 
     goal = latest["goal_weight"]
@@ -632,9 +615,6 @@ fig.add_hline(
 )
 
 
-# =========================================================
-# グラフデザイン
-# =========================================================
 fig.update_layout(
     height=420,
     margin=dict(
@@ -666,7 +646,7 @@ st.plotly_chart(
 # =========================================================
 # チームランキング
 # =========================================================
-show_html("""
+st.html("""
 <div class="section-title">
     🏆 チームランキング
 </div>
@@ -688,105 +668,37 @@ ranking = (
 )
 
 
-ranking_display = []
-
-
 for i, row in ranking.iterrows():
 
     if i == 0:
-
-        rank = "🥇"
-
-    elif i == 1:
-
-        rank = "🥈"
-
-    elif i == 2:
-
-        rank = "🥉"
-
-    else:
-
-        rank = f"{i + 1}"
-
-
-    ranking_display.append({
-        "順位": rank,
-        "選手": row["name"],
-        "体重 (kg)": round(row["weight"], 1),
-        "筋肉量 (kg)": round(row["muscle"], 1),
-        "体脂肪率 (%)": round(row["fat"], 1),
-        "測定日": row["date"].strftime("%Y/%m/%d")
-    })
-
-
-ranking_table = pd.DataFrame(ranking_display)
-
-
-st.dataframe(
-    ranking_table,
-    use_container_width=True,
-    hide_index=True
-)
-
-
-# =========================================================
-# 目標達成ランキング
-# =========================================================
-show_html("""
-<div class="section-title">
-    🎯 目標達成ランキング
-</div>
-""")
-
-
-latest_df["score"] = (
-    (latest_df["goal_weight"] - latest_df["weight"]).abs()
-    +
-    (latest_df["goal_muscle"] - latest_df["muscle"]).abs()
-    +
-    (latest_df["fat"] - latest_df["goal_fat"]).abs()
-)
-
-
-goal_ranking = (
-    latest_df
-    .sort_values("score")
-    .reset_index(drop=True)
-)
-
-
-for i, row in goal_ranking.iterrows():
-
-    if i == 0:
-
         medal = "🥇"
 
     elif i == 1:
-
         medal = "🥈"
 
     elif i == 2:
-
         medal = "🥉"
 
     else:
-
         medal = f"{i + 1}位"
 
 
-    show_html(f"""
-    <div class="goal-ranking-card">
+    st.html(f"""
+    <div class="ranking-card">
 
-        <span class="ranking-name">
+        <div class="ranking-name">
             {medal} {row["name"]}
-        </span>
+        </div>
 
-        <br>
-
-        <span class="ranking-data">
-            目標との差：{row["score"]:.2f}
-        </span>
+        <div class="ranking-data">
+            体重：{row["weight"]:.1f} kg
+            &nbsp;｜&nbsp;
+            筋肉：{row["muscle"]:.1f} kg
+            &nbsp;｜&nbsp;
+            体脂肪：{row["fat"]:.1f}%
+            &nbsp;｜&nbsp;
+            測定日：{row["date"].strftime("%Y/%m/%d")}
+        </div>
 
     </div>
     """)
