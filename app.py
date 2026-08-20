@@ -1,6 +1,8 @@
 import pandas as pd
 import streamlit as st
 import plotly.express as px
+import textwrap
+
 
 # =========================================================
 # ページ設定
@@ -11,6 +13,7 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded"
 )
+
 
 # =========================================================
 # CSS
@@ -150,10 +153,25 @@ st.markdown("""
 
 
 # =========================================================
+# HTML表示用関数
+# =========================================================
+def show_html(html):
+    """
+    HTMLのインデントを自動的に削除して表示する。
+    コードとして表示される問題を防ぐ。
+    """
+    st.markdown(
+        textwrap.dedent(html),
+        unsafe_allow_html=True
+    )
+
+
+# =========================================================
 # データ読み込み
 # =========================================================
 @st.cache_data
 def load_data():
+
     data = pd.read_csv("players.csv")
 
     data.columns = data.columns.str.strip()
@@ -245,7 +263,6 @@ fat_diff = latest["fat"] - latest["goal_fat"]
 # =========================================================
 # 目標達成率
 # =========================================================
-
 def calculate_progress(current, goal, metric_type):
 
     if metric_type == "increase":
@@ -257,7 +274,7 @@ def calculate_progress(current, goal, metric_type):
 
     else:
 
-        # 脂肪など「減らす」項目
+        # 体脂肪など「減らす」項目
         if current == 0:
             return 100
 
@@ -288,23 +305,23 @@ fat_progress = calculate_progress(
 # =========================================================
 # タイトル
 # =========================================================
+show_html("""
+<div class="main-title">
+    🏉 TUS InBody
+</div>
+""")
 
-st.markdown(
-    '<div class="main-title">🏉 TUS InBody</div>',
-    unsafe_allow_html=True
-)
-
-st.markdown(
-    '<div class="sub-title">選手の身体データを管理・分析するダッシュボード</div>',
-    unsafe_allow_html=True
-)
+show_html("""
+<div class="sub-title">
+    選手の身体データを管理・分析するダッシュボード
+</div>
+""")
 
 
 # =========================================================
 # 選手情報
 # =========================================================
-
-st.markdown(f"""
+show_html(f"""
 <div class="player-header">
 
     <div class="player-name">
@@ -316,51 +333,63 @@ st.markdown(f"""
     </div>
 
 </div>
-""", unsafe_allow_html=True)
+""")
 
 
 # =========================================================
 # 最新データ
 # =========================================================
+show_html("""
+<div class="section-title">
+    📊 最新コンディション
+</div>
+""")
 
-st.markdown(
-    '<div class="section-title">📊 最新コンディション</div>',
-    unsafe_allow_html=True
-)
 
 col1, col2, col3 = st.columns(3)
 
 
-# ---------------------------------------------------------
+# =========================================================
 # 体重
-# ---------------------------------------------------------
-
+# =========================================================
 with col1:
 
     if weight_diff > 0:
+
         diff_text = f"あと {weight_diff:.1f} kg"
         diff_class = "positive"
+
     elif weight_diff < 0:
+
         diff_text = f"{abs(weight_diff):.1f} kg オーバー"
         diff_class = "negative"
+
     else:
+
         diff_text = "🎯 目標達成"
         diff_class = "positive"
+
 
     if weight_change is not None:
 
         if weight_change > 0:
+
             change_text = f"↑ 前回より +{weight_change:.1f} kg"
+
         elif weight_change < 0:
+
             change_text = f"↓ 前回より {weight_change:.1f} kg"
+
         else:
+
             change_text = "→ 前回から変化なし"
 
     else:
+
         change_text = "初回測定"
 
 
-    st.markdown(f"""
+    show_html(f"""
     <div class="metric-card">
 
         <div class="metric-title">
@@ -384,7 +413,7 @@ with col1:
         </div>
 
     </div>
-    """, unsafe_allow_html=True)
+    """)
 
     st.progress(
         int(weight_progress),
@@ -392,21 +421,23 @@ with col1:
     )
 
 
-# ---------------------------------------------------------
+# =========================================================
 # 筋肉量
-# ---------------------------------------------------------
-
+# =========================================================
 with col2:
 
     if muscle_diff > 0:
+
         diff_text = f"あと {muscle_diff:.1f} kg"
         diff_class = "positive"
 
     elif muscle_diff < 0:
+
         diff_text = f"{abs(muscle_diff):.1f} kg オーバー"
         diff_class = "positive"
 
     else:
+
         diff_text = "🎯 目標達成"
         diff_class = "positive"
 
@@ -414,17 +445,23 @@ with col2:
     if muscle_change is not None:
 
         if muscle_change > 0:
+
             change_text = f"↑ 前回より +{muscle_change:.1f} kg"
+
         elif muscle_change < 0:
+
             change_text = f"↓ 前回より {muscle_change:.1f} kg"
+
         else:
+
             change_text = "→ 前回から変化なし"
 
     else:
+
         change_text = "初回測定"
 
 
-    st.markdown(f"""
+    show_html(f"""
     <div class="metric-card">
 
         <div class="metric-title">
@@ -448,7 +485,7 @@ with col2:
         </div>
 
     </div>
-    """, unsafe_allow_html=True)
+    """)
 
     st.progress(
         int(muscle_progress),
@@ -456,21 +493,23 @@ with col2:
     )
 
 
-# ---------------------------------------------------------
+# =========================================================
 # 体脂肪
-# ---------------------------------------------------------
-
+# =========================================================
 with col3:
 
     if fat_diff > 0:
+
         diff_text = f"{fat_diff:.1f}% オーバー"
         diff_class = "negative"
 
     elif fat_diff < 0:
+
         diff_text = f"目標より {abs(fat_diff):.1f}% 少ない"
         diff_class = "positive"
 
     else:
+
         diff_text = "🎯 目標達成"
         diff_class = "positive"
 
@@ -478,17 +517,23 @@ with col3:
     if fat_change is not None:
 
         if fat_change > 0:
+
             change_text = f"↑ 前回より +{fat_change:.1f}%"
+
         elif fat_change < 0:
+
             change_text = f"↓ 前回より {fat_change:.1f}%"
+
         else:
+
             change_text = "→ 前回から変化なし"
 
     else:
+
         change_text = "初回測定"
 
 
-    st.markdown(f"""
+    show_html(f"""
     <div class="metric-card">
 
         <div class="metric-title">
@@ -512,7 +557,7 @@ with col3:
         </div>
 
     </div>
-    """, unsafe_allow_html=True)
+    """)
 
     st.progress(
         int(fat_progress),
@@ -523,17 +568,19 @@ with col3:
 # =========================================================
 # 推移グラフ
 # =========================================================
+show_html("""
+<div class="section-title">
+    📈 身体データの推移
+</div>
+""")
 
-st.markdown(
-    '<div class="section-title">📈 身体データの推移</div>',
-    unsafe_allow_html=True
-)
 
 metric_map = {
     "体重": "weight",
     "筋肉量": "muscle",
     "体脂肪率": "fat"
 }
+
 
 metric_label = st.selectbox(
     "表示する項目",
@@ -543,8 +590,11 @@ metric_label = st.selectbox(
 metric = metric_map[metric_label]
 
 
+# =========================================================
 # グラフ用データ
+# =========================================================
 graph_df = player_df.copy()
+
 
 fig = px.line(
     graph_df,
@@ -558,10 +608,9 @@ fig = px.line(
 )
 
 
-# ---------------------------------------------------------
+# =========================================================
 # 目標ライン
-# ---------------------------------------------------------
-
+# =========================================================
 if metric == "weight":
 
     goal = latest["goal_weight"]
@@ -583,10 +632,9 @@ fig.add_hline(
 )
 
 
-# ---------------------------------------------------------
+# =========================================================
 # グラフデザイン
-# ---------------------------------------------------------
-
+# =========================================================
 fig.update_layout(
     height=420,
     margin=dict(
@@ -618,11 +666,12 @@ st.plotly_chart(
 # =========================================================
 # チームランキング
 # =========================================================
+show_html("""
+<div class="section-title">
+    🏆 チームランキング
+</div>
+""")
 
-st.markdown(
-    '<div class="section-title">🏆 チームランキング</div>',
-    unsafe_allow_html=True
-)
 
 latest_df = (
     df.sort_values("date")
@@ -630,6 +679,7 @@ latest_df = (
     .tail(1)
     .copy()
 )
+
 
 ranking = (
     latest_df
@@ -640,16 +690,25 @@ ranking = (
 
 ranking_display = []
 
+
 for i, row in ranking.iterrows():
 
     if i == 0:
+
         rank = "🥇"
+
     elif i == 1:
+
         rank = "🥈"
+
     elif i == 2:
+
         rank = "🥉"
+
     else:
+
         rank = f"{i + 1}"
+
 
     ranking_display.append({
         "順位": rank,
@@ -663,6 +722,7 @@ for i, row in ranking.iterrows():
 
 ranking_table = pd.DataFrame(ranking_display)
 
+
 st.dataframe(
     ranking_table,
     use_container_width=True,
@@ -673,11 +733,12 @@ st.dataframe(
 # =========================================================
 # 目標達成ランキング
 # =========================================================
+show_html("""
+<div class="section-title">
+    🎯 目標達成ランキング
+</div>
+""")
 
-st.markdown(
-    '<div class="section-title">🎯 目標達成ランキング</div>',
-    unsafe_allow_html=True
-)
 
 latest_df["score"] = (
     (latest_df["goal_weight"] - latest_df["weight"]).abs()
@@ -686,6 +747,7 @@ latest_df["score"] = (
     +
     (latest_df["fat"] - latest_df["goal_fat"]).abs()
 )
+
 
 goal_ranking = (
     latest_df
@@ -697,15 +759,23 @@ goal_ranking = (
 for i, row in goal_ranking.iterrows():
 
     if i == 0:
+
         medal = "🥇"
+
     elif i == 1:
+
         medal = "🥈"
+
     elif i == 2:
+
         medal = "🥉"
+
     else:
+
         medal = f"{i + 1}位"
 
-    st.markdown(f"""
+
+    show_html(f"""
     <div class="goal-ranking-card">
 
         <span class="ranking-name">
@@ -719,13 +789,12 @@ for i, row in goal_ranking.iterrows():
         </span>
 
     </div>
-    """, unsafe_allow_html=True)
+    """)
 
 
 # =========================================================
 # フッター
 # =========================================================
-
 st.markdown("---")
 
 st.caption(
