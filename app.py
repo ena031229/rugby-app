@@ -309,9 +309,6 @@ st.html("""
     🏉 TUS InBody
 </div>
 
-<div class="sub-title">
-    選手の身体データを管理・分析するダッシュボード
-</div>
 """)
 
 
