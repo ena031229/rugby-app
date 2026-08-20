@@ -29,12 +29,6 @@ body {
     font-size: 42px;
     font-weight: 800;
     color: #252936;
-    margin-bottom: 3px;
-}
-
-.sub-title {
-    font-size: 16px;
-    color: #777777;
     margin-bottom: 25px;
 }
 
@@ -63,7 +57,7 @@ body {
     font-size: 27px;
     font-weight: 800;
     color: #252936;
-    margin: 25px 0 15px 0;
+    margin: 30px 0 15px 0;
 }
 
 /* データカード */
@@ -119,6 +113,17 @@ body {
     color: #888888;
 }
 
+
+/* 測定履歴 */
+.history-card {
+    background: white;
+    border: 1px solid #e9ebef;
+    border-radius: 18px;
+    padding: 20px;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.05);
+}
+
+
 /* ランキング */
 .ranking-card {
     background: white;
@@ -139,6 +144,7 @@ body {
     font-size: 14px;
     color: #666666;
 }
+
 
 /* サイドバー */
 .sidebar-title {
@@ -184,7 +190,7 @@ st.sidebar.html("""
 <br>
 
 <div class="sidebar-description">
-    選手の身体データを管理・分析するダッシュボード
+    選手の身体データを管理・分析
 </div>
 """)
 
@@ -208,6 +214,7 @@ st.sidebar.markdown("""
 - 目標達成度
 - 前回測定との比較
 - 身体データの推移
+- 測定履歴
 - チームランキング
 """)
 
@@ -308,7 +315,6 @@ st.html("""
 <div class="main-title">
     🏉 TUS InBody
 </div>
-
 """)
 
 
@@ -551,7 +557,7 @@ with col3:
 
 
 # =========================================================
-# 推移グラフ
+# 身体データの推移
 # =========================================================
 st.html("""
 <div class="section-title">
@@ -637,6 +643,79 @@ fig.update_yaxes(
 st.plotly_chart(
     fig,
     use_container_width=True
+)
+
+
+# =========================================================
+# 測定履歴
+# =========================================================
+st.html("""
+<div class="section-title">
+    📅 測定履歴
+</div>
+""")
+
+
+st.html("""
+<div class="history-card">
+    過去の測定結果を一覧で確認できます。
+</div>
+""")
+
+
+# 表示用データを作成
+history_df = player_df[
+    ["date", "weight", "muscle", "fat"]
+].copy()
+
+
+# 日付を見やすい形式に変更
+history_df["date"] = history_df["date"].dt.strftime("%Y/%m/%d")
+
+
+# 列名を日本語に変更
+history_df = history_df.rename(
+    columns={
+        "date": "測定日",
+        "weight": "体重 (kg)",
+        "muscle": "筋肉量 (kg)",
+        "fat": "体脂肪率 (%)"
+    }
+)
+
+
+# 数値を小数1桁にする
+history_df["体重 (kg)"] = history_df["体重 (kg)"].round(1)
+history_df["筋肉量 (kg)"] = history_df["筋肉量 (kg)"].round(1)
+history_df["体脂肪率 (%)"] = history_df["体脂肪率 (%)"].round(1)
+
+
+# 新しい測定日を上にする
+history_df = history_df.iloc[::-1].reset_index(drop=True)
+
+
+# テーブル表示
+st.dataframe(
+    history_df,
+    use_container_width=True,
+    hide_index=True,
+    column_config={
+        "測定日": st.column_config.TextColumn(
+            "📅 測定日"
+        ),
+        "体重 (kg)": st.column_config.NumberColumn(
+            "🏋️ 体重",
+            format="%.1f kg"
+        ),
+        "筋肉量 (kg)": st.column_config.NumberColumn(
+            "💪 筋肉量",
+            format="%.1f kg"
+        ),
+        "体脂肪率 (%)": st.column_config.NumberColumn(
+            "🔥 体脂肪率",
+            format="%.1f %%"
+        )
+    }
 )
 
 
